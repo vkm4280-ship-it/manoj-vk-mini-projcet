@@ -1,1 +1,217 @@
+/* ==========================================================================
+   MANOJ VK PORTFOLIO LOGIC
+   ========================================================================== */
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. Dynamic Typewriter Effect for Hero Subtitle ---
+    const typewriterElement = document.getElementById('typewriter');
+    const words = [
+        "Aspiring Software Engineer",
+        "AI & ML Student",
+        "Fitness Enthusiast"
+    ];
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 100;
+
+    function type() {
+        const currentWord = words[wordIndex];
+        
+        if (isDeleting) {
+            // Remove character
+            typewriterElement.textContent = currentWord.substring(0, charIndex - 1);
+            charIndex--;
+            typeSpeed = 40; // delete faster
+        } else {
+            // Add character
+            typewriterElement.textContent = currentWord.substring(0, charIndex + 1);
+            charIndex++;
+            typeSpeed = 90;
+        }
+
+        // Handle word transitions
+        if (!isDeleting && charIndex === currentWord.length) {
+            // Complete word typed, wait before deleting
+            typeSpeed = 2200; 
+            isDeleting = true;
+        } else if (isDeleting && charIndex === 0) {
+            // Deletion completed, move to next word
+            isDeleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+            typeSpeed = 400; // brief delay before typing next word
+        }
+
+        setTimeout(type, typeSpeed);
+    }
+
+    // Initialize typing animation if element exists
+    if (typewriterElement) {
+        setTimeout(type, 1000);
+    }
+
+
+    // --- 2. Floating Navbar Scroll Effect & Active Section Tracker ---
+    const navbar = document.getElementById('navbar');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+
+    function handleScrollEffects() {
+        // Class toggle for navbar container styling on scroll
+        if (window.scrollY > 20) {
+            navbar.classList.add('nav-scrolled');
+        } else {
+            navbar.classList.remove('nav-scrolled');
+        }
+
+        // Active link highlighting based on current view position
+        let currentSectionId = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100; // offset for navbar height
+            const sectionHeight = section.clientHeight;
+            if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                currentSectionId = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${currentSectionId}`) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    window.addEventListener('scroll', handleScrollEffects);
+    handleScrollEffects(); // run initial check
+
+
+    // --- 3. Light / Dark Theme Toggler ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const bodyElement = document.body;
+
+    // Check localStorage for prior preference
+    const savedTheme = localStorage.getItem('manoj-portfolio-theme');
+    if (savedTheme === 'light') {
+        bodyElement.classList.remove('dark-theme');
+        bodyElement.classList.add('light-theme');
+    } else {
+        // Default to dark theme
+        bodyElement.classList.add('dark-theme');
+        bodyElement.classList.remove('light-theme');
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        if (bodyElement.classList.contains('dark-theme')) {
+            bodyElement.classList.remove('dark-theme');
+            bodyElement.classList.add('light-theme');
+            localStorage.setItem('manoj-portfolio-theme', 'light');
+        } else {
+            bodyElement.classList.remove('light-theme');
+            bodyElement.classList.add('dark-theme');
+            localStorage.setItem('manoj-portfolio-theme', 'dark');
+        }
+    });
+
+
+    // --- 4. Mobile Menu Drawer Navigation ---
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const navMenu = document.getElementById('nav-menu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+        mobileMenuBtn.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+
+    // Close menu when links are clicked
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenuBtn.classList.remove('active');
+            navMenu.classList.remove('active');
+        });
+    });
+
+
+    // --- 5. Scroll Reveal Intersection Observer ---
+    const revealElements = document.querySelectorAll('.scroll-reveal');
+    
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                // stop observing once revealed
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.12, // reveal when 12% of the element is visible
+        rootMargin: "0px 0px -50px 0px" // load slightly early
+    });
+
+    revealElements.forEach(element => {
+        revealObserver.observe(element);
+    });
+
+
+    // --- 6. Hero Visual Card Glowing Hover Follower ---
+    const heroCard = document.querySelector('.interactive-hero-card');
+    if (heroCard) {
+        heroCard.addEventListener('mousemove', (e) => {
+            const rect = heroCard.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            heroCard.style.setProperty('--mouse-x', `${x}%`);
+            heroCard.style.setProperty('--mouse-y', `${y}%`);
+        });
+    }
+
+
+    // --- 7. Contact Form Handling & Validation ---
+    const contactForm = document.getElementById('contact-form');
+    const formFeedback = document.getElementById('form-feedback');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // prevent default browser reload
+            
+            const nameInput = document.getElementById('name').value.trim();
+            const emailInput = document.getElementById('email').value.trim();
+            const subjectInput = document.getElementById('subject').value.trim();
+            const messageInput = document.getElementById('message').value.trim();
+
+            if (!nameInput || !emailInput || !subjectInput || !messageInput) {
+                showFeedback("Please fill out all required fields.", "error");
+                return;
+            }
+
+            // Simulate form submission status
+            submitBtn.disabled = true;
+            const originalBtnContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<span>Sending...</span><svg class="send-icon spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+
+            setTimeout(() => {
+                showFeedback(`Thank you, ${nameInput}! Your message has been sent successfully.`, "success");
+                contactForm.reset();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
+            }, 1500);
+        });
+    }
+
+    function showFeedback(message, status) {
+        formFeedback.textContent = message;
+        formFeedback.className = "form-feedback " + status;
+        
+        // Clear success message after 5 seconds
+        if (status === 'success') {
+            setTimeout(() => {
+                formFeedback.textContent = "";
+                formFeedback.className = "form-feedback";
+            }, 5000);
+        }
+    }
+});
 
